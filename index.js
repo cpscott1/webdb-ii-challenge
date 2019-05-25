@@ -26,14 +26,74 @@ server.get('/api/zoos', (req, res) => {
   })
 })
 
-server.post('/api/zoos', (req, res) => {
+server.get('/api/zoos/:id', (req, res) => {
   db('zoos')
-  .insert(req.body, 'id')
-  .then(results =. {
-    res.status(200).json(results);
+  where({ id: req.params.id })
+  .first()
+  .then(zoo => {
+    if(zoo) {
+    res.status(200).json(zoo);
+    } else {
+      res.status(404).json({ message: 'Zoo not found' })
+    }
   })
   .catch(err => {
-    res.sstatus(500).json(err);
+    res.status(500).json(err);
+  })
+})
+
+server.post('/api/zoos', (req, res) => {
+  if(!req.body.name) {
+    res.status(400).json({ message: 'need a name' })
+  } else {
+    db('zoos')
+    .insert(req.body, 'id')
+    .then(ids => {
+      db('zoos')
+        .where({ id: ids[0] })
+        .first()
+        .then(role => {
+            res.status(200).json(zoo);
+        })
+        .catch(err => {
+          res.status(500).json(err);
+        })
+    })
+    .catch(err => {
+      res.status(500).json(err);
+    })
+  }
+})
+
+server.put('/api/zoos/:id', (req, res) => {
+  db('zoos')
+  .where({ id: req.params.id })
+  .update(req.body)
+  .then(count => {
+    if(count > 0) {
+      res.status(200).json({ message: 'updated zoo' })
+    } else {
+      res.status(404).json({ message: 'Zoo does not exist' })
+    }
+  })
+  .catch(err => {
+    res.status(500).json(err);
+  })
+})
+
+server.delete('/api/zoos/:id', (req, res) => {
+  db('zoos')
+  .where({ id: req.params.id })
+  .delete(req.body)
+  .then(count => {
+    if(count > 0) {
+      res.status(200).json({ message: 'deleted zoo' })
+    } else {
+      res.status(404).json({ message: 'Zoo does not exist' })
+    }
+  })
+  .catch(err => {
+    res.status(500).json(err);
   })
 })
 
